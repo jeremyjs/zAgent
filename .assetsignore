@@ -1,0 +1,15 @@
+.git
+.gitignore
+.assetsignore
+node_modules
+models
+out
+tools
+wrangler.jsonc
+mise.toml
+package.json
+package-lock.json
+run
+AGENTS.md
+.wrangler
+.DS_Store

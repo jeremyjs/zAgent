@@ -1,0 +1,11 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // Static-assets-only Worker: the whole app runs in the browser.
+  // Model weights are not uploaded (25 MiB/file limit); the page pulls them from Hugging Face.
+  "name": "zagent",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./",
+    "not_found_handling": "404-page"
+  }
+}

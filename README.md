@@ -9,6 +9,9 @@ each new build, and thinks with a small LLM engine, also written in Zig, that ru
 ./run --tunnel   # same, plus a public https://….trycloudflare.com URL via cloudflared
 ```
 
+Live: https://zagent.raspy-thunder-20d2.workers.dev (deploy with `npm run deploy`: a static-assets-only
+Worker, see `wrangler.jsonc` / `.assetsignore`; model weights come from Hugging Face).
+
 Needs Zig 0.16 (`mise install` picks it up from `mise.toml`). Node is only for tests.
 
 ## How it works

@@ -6,7 +6,8 @@
     "start": "./run",
     "test": "node tools/test.mjs",
     "compile": "node tools/compile-node.mjs",
-    "llm": "node tools/llm-node.mjs"
+    "llm": "node tools/llm-node.mjs",
+    "deploy": "wrangler deploy"
   },
   "devDependencies": {
     "@bjorn3/browser_wasi_shim": "0.4.2"
