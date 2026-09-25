@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# zAgent dev runner.
+#   ./run              build what changed, serve on http://127.0.0.1:8787, open the browser
+#   ./run --tunnel     same, plus a public https://*.trycloudflare.com URL via cloudflared
+#   ./run --no-open    don't open a browser tab
+#   PORT=9000 ./run
+set -euo pipefail
+cd "$(dirname "$0")"
+PORT="${PORT:-8787}"
+TUNNEL=0 OPEN=1
+for a in "$@"; do
+  case "$a" in
+    --tunnel) TUNNEL=1 ;;
+    --no-open) OPEN=0 ;;
+    *) echo "unknown option: $a" >&2; exit 2 ;;
+  esac
+done
+
+if command -v mise >/dev/null && [ -f mise.toml ]; then ZIG=(mise exec -- zig); else ZIG=(zig); fi
+mkdir -p out
+
+if [ ! -f engine/engine.wasm ] || [ engine/engine.zig -nt engine/engine.wasm ]; then
+  echo "» building engine/engine.wasm"
+  "${ZIG[@]}" build-exe engine/engine.zig -target wasm32-freestanding \
+    -mcpu=generic+simd128+bulk_memory+nontrapping_fptoint -O ReleaseFast \
+    -fno-entry -rdynamic -fstrip -femit-bin=engine/engine.wasm
+  rm -f engine/engine.wasm.o
+fi
+
+if [ ! -x out/zagent-serve ] || [ tools/serve.zig -nt out/zagent-serve ]; then
+  echo "» building out/zagent-serve"
+  "${ZIG[@]}" build-exe tools/serve.zig -O ReleaseSafe -femit-bin=out/zagent-serve
+  rm -f out/zagent-serve.o
+fi
+
+[ -f zig-out/bin/zig.wasm ] || tools/fetch-compiler.sh
+[ -d models ] || echo "» tip: tools/fetch-model.sh caches SmolLM2 weights locally (otherwise the page pulls them from Hugging Face)"
+
+URL="http://127.0.0.1:${PORT}/"
+./out/zagent-serve --port "$PORT" &
+SERVER=$!
+trap 'kill $SERVER 2>/dev/null' EXIT INT TERM
+sleep 0.3
+[ "$OPEN" = 1 ] && command -v open >/dev/null && open "$URL"
+
+if [ "$TUNNEL" = 1 ]; then
+  command -v cloudflared >/dev/null || { echo "cloudflared not installed: brew install cloudflared" >&2; exit 1; }
+  echo "» starting Cloudflare quick tunnel (URL appears below as https://….trycloudflare.com)"
+  cloudflared tunnel --no-autoupdate --url "$URL"
+else
+  wait $SERVER
+fi

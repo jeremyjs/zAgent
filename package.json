@@ -1,0 +1,14 @@
+{
+  "name": "zagent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "./run",
+    "test": "node tools/test.mjs",
+    "compile": "node tools/compile-node.mjs",
+    "llm": "node tools/llm-node.mjs"
+  },
+  "devDependencies": {
+    "@bjorn3/browser_wasi_shim": "0.4.2"
+  }
+}
